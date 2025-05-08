@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notas Escolares | Controle Acadêmico</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              200: '#bae6fd',
+              300: '#7dd3fc',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+              800: '#075985',
+              900: '#0c4a6e',
+            },
+            secondary: {
+              50: '#f5f3ff',
+              100: '#ede9fe',
+              200: '#ddd6fe',
+              300: '#c4b5fd',
+              400: '#a78bfa',
+              500: '#8b5cf6',
+              600: '#7c3aed',
+              700: '#6d28d9',
+              800: '#5b21b6',
+              900: '#4c1d95',
+            },
+            success: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              200: '#bbf7d0',
+              300: '#86efac',
+              400: '#4ade80',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d',
+              800: '#166534',
+              900: '#14532d',
+            },
+            warning: {
+              50: '#fffbeb',
+              100: '#fef3c7',
+              200: '#fde68a',
+              300: '#fcd34d',
+              400: '#fbbf24',
+              500: '#f59e0b',
+              600: '#d97706',
+              700: '#b45309',
+              800: '#92400e',
+              900: '#78350f',
+            },
+            danger: {
+              50: '#fef2f2',
+              100: '#fee2e2',
+              200: '#fecaca',
+              300: '#fca5a5',
+              400: '#f87171',
+              500: '#ef4444',
+              600: '#dc2626',
+              700: '#b91c1c',
+              800: '#991b1b',
+              900: '#7f1d1d',
+            },
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      transition: background-color 0.3s ease;
+    }
+    
+    .materia-card {
+      transition: all 0.3s ease;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+    
+    .materia-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+    }
+    
+    .input-nota {
+      -moz-appearance: textfield;
+    }
+    
+    .input-nota::-webkit-outer-spin-button,
+    .input-nota::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    
+    .progress-bar {
+      height: 8px;
+      border-radius: 4px;
+      background-color: #e2e8f0;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+    
+    .dark-mode .materia-card {
+      background-color: #1e293b;
+      border-color: #334155;
+    }
+    
+    .dark-mode .progress-bar {
+      background-color: #334155;
+    }
+    
+    .dark-mode .input-nota {
+      background-color: #1e293b;
+      border-color: #334155;
+    }
+    
+    .animate-pulse {
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.5;
+      }
+    }
+    
+    .tooltip {
+      position: relative;
+    }
+    
+    .tooltip .tooltip-text {
+      visibility: hidden;
+      width: 120px;
+      background-color: #1e293b;
+      color: #fff;
+      text-align: center;
+      border-radius: 6px;
+      padding: 5px;
+      position: absolute;
+      z-index: 1;
+      bottom: 125%;
+      left: 50%;
+      margin-left: -60px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    
+    .tooltip:hover .tooltip-text {
+      visibility: visible;
+      opacity: 1;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+  <div class="container mx-auto px-4 py-8">
+    <header class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+      <div>
+        <h1 class="text-3xl font-bold text-primary-700 dark:text-primary-400 flex items-center">
+          <i class="fas fa-graduation-cap mr-3"></i>
+          <span>Controle de Notas Escolares</span>
+        </h1>
+        <p class="text-gray-600 dark:text-gray-400 mt-1">Acompanhe seu desempenho acadêmico de forma simples</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <button id="darkModeToggle" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+          <i class="fas fa-moon dark:hidden"></i>
+          <i class="fas fa-sun hidden dark:inline"></i>
+        </button>
+        <button onclick="exportarNotas()" class="flex items-center gap-2 px-4 py-2 bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-200 rounded-lg hover:bg-primary-200 dark:hover:bg-primary-800 transition">
+          <i class="fas fa-file-export"></i> Exportar
+        </button>
+        <button onclick="mostrarFiltros()" class="flex items-center gap-2 px-4 py-2 bg-secondary-100 dark:bg-secondary-900 text-secondary-700 dark:text-secondary-200 rounded-lg hover:bg-secondary-200 dark:hover:bg-secondary-800 transition">
+          <i class="fas fa-filter"></i> Filtrar
+        </button>
+      </div>
+    </header>
+    
+    <div id="filtros" class="hidden mb-6 p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <h3 class="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-200">Filtrar Matérias</h3>
+      <div class="flex flex-wrap gap-3">
+        <button onclick="filtrarMaterias('todas')" class="px-3 py-1 bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-200 rounded-md hover:bg-primary-200 dark:hover:bg-primary-800 transition">
+          Todas
+        </button>
+        <button onclick="filtrarMaterias('aprovadas')" class="px-3 py-1 bg-success-100 dark:bg-success-900 text-success-700 dark:text-success-200 rounded-md hover:bg-success-200 dark:hover:bg-success-800 transition">
+          Aprovadas
+        </button>
+        <button onclick="filtrarMaterias('reprovadas')" class="px-3 py-1 bg-danger-100 dark:bg-danger-900 text-danger-700 dark:text-danger-200 rounded-md hover:bg-danger-200 dark:hover:bg-danger-800 transition">
+          Reprovadas
+        </button>
+        <button onclick="filtrarMaterias('incompletas')" class="px-3 py-1 bg-warning-100 dark:bg-warning-900 text-warning-700 dark:text-warning-200 rounded-md hover:bg-warning-200 dark:hover:bg-warning-800 transition">
+          Incompletas
+        </button>
+      </div>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="conteudo"></div>
+    
+    <div class="mt-8 p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
+        <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">Resumo Geral</h2>
+        <div class="flex items-center gap-2 mt-2 md:mt-0">
+          <span class="text-sm text-gray-600 dark:text-gray-400">Atualizado em:</span>
+          <span id="dataAtualizacao" class="text-sm font-medium text-primary-600 dark:text-primary-400"></span>
+        </div>
+      </div>
+      <div id="resumoGeral" class="space-y-4">
+        <!-- Resumo será preenchido pelo JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const materias = [
+      { nome: 'Ed. Financeira', icone: 'fa-coins' },
+      { nome: 'Projeto de Vida', icone: 'fa-bullseye' },
+      { nome: 'Rec. Aprend. Língua Portuguesa', icone: 'fa-book-open' },
+      { nome: 'Rec. Aprend. Matemática', icone: 'fa-calculator' },
+      { nome: 'Biologia II', icone: 'fa-dna' },
+      { nome: 'Física II', icone: 'fa-atom' },
+      { nome: 'Física III', icone: 'fa-magnet' },
+      { nome: 'Química I', icone: 'fa-flask' },
+      { nome: 'Educação Física', icone: 'fa-running' },
+      { nome: 'Física', icone: 'fa-atom' },
+      { nome: 'Língua Portuguesa', icone: 'fa-language' },
+      { nome: 'Matemática', icone: 'fa-square-root-alt' },
+      { nome: 'Matemática II', icone: 'fa-calculator' }
+    ];
+
+    // Modo escuro
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    darkModeToggle.addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+      localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+    });
+
+    // Verificar preferência de modo escuro
+    if (localStorage.getItem('darkMode') === 'true') {
+      document.body.classList.add('dark-mode');
+    }
+
+    // Atualizar data de atualização
+    function atualizarData() {
+      const now = new Date();
+      const options = { 
+        day: '2-digit', 
+        month: '2-digit', 
+        year: 'numeric', 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      };
+      document.getElementById('dataAtualizacao').textContent = now.toLocaleDateString('pt-BR', options);
+    }
+
+    const salvarNotas = () => {
+      const dados = {};
+      materias.forEach(materia => {
+        const notas = [1, 2, 3].map(t => {
+          const input = document.getElementById(`${materia.nome.replace(/\s+/g, '_')}_t${t}`);
+          return input ? Number(input.value) || 0 : 0;
+        });
+        dados[materia.nome] = notas;
+      });
+      localStorage.setItem('notasEscola', JSON.stringify(dados));
+      calcularNotas();
+      atualizarResumoGeral();
+      atualizarData();
+    };
+
+    const carregarNotas = () => {
+      const dados = JSON.parse(localStorage.getItem('notasEscola')) || {};
+      
+      materias.forEach(materia => {
+        const materiaId = materia.nome.replace(/\s+/g, '_');
+        const div = document.createElement('div');
+        div.className = 'materia-card bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6';
+        div.id = `card_${materiaId}`;
+        
+        div.innerHTML = `
+          <div class="flex justify-between items-start mb-4">
+            <div class="flex items-center gap-3">
+              <div class="p-2 rounded-lg bg-primary-100 dark:bg-primary-900 text-primary-600 dark:text-primary-300">
+                <i class="fas ${materia.icone}"></i>
+              </div>
+              <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200">${materia.nome}</h2>
+            </div>
+          </div>
+          
+          <div class="space-y-3 mb-4">
+            ${[1, 2, 3].map(t => `
+              <div class="flex items-center justify-between">
+                <label class="text-sm text-gray-600 dark:text-gray-300">Trimestre ${t}</label>
+                <div class="flex items-center gap-2">
+                  <input 
+                    type="number" 
+                    id="${materiaId}_t${t}"
+                    min="0"
+                    max="100"
+                    value="${dados[materia.nome]?.[t - 1] ?? ''}"
+                    onchange="salvarNotas()"
+                    class="input-nota w-20 px-3 py-1.5 border border-gray-300 dark:border-gray-700 rounded-md text-right focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 transition"
+                    placeholder="0"
+                  >
+                  <span class="text-xs text-gray-400">pts</span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+          
+          <div class="progress-bar mb-2">
+            <div id="${materiaId}_progress" class="progress-fill ${dados[materia.nome] ? (dados[materia.nome].reduce((a, b) => a + (Number(b) || 0), 0) >= 180 ? 'bg-success-500' : 'bg-danger-500') : 'bg-gray-300'}"></div>
+          </div>
+          
+          <div id="${materiaId}_res" class="text-sm space-y-2">
+            <!-- Resultado será preenchido pelo JavaScript -->
+          </div>
+        `;
+        
+        document.getElementById('conteudo').appendChild(div);
+      });
+      
+      calcularNotas();
+      atualizarResumoGeral();
+      atualizarData();
+    };
+
+    const calcularNotas = () => {
+      materias.forEach(materia => {
+        const materiaId = materia.nome.replace(/\s+/g, '_');
+        const notas = [1, 2, 3].map(t => {
+          const input = document.getElementById(`${materiaId}_t${t}`);
+          return input ? Number(input.value) || 0 : 0;
+        });
+        
+        const soma = notas.reduce((a, b) => a + b, 0);
+        const mediaTrimestres = notas.map(n => n >= 60 ? 
+          '<span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-success-100 dark:bg-success-900 text-success-700 dark:text-success-300"><i class="fas fa-check text-xs"></i></span>' : 
+          '<span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-danger-100 dark:bg-danger-900 text-danger-700 dark:text-danger-300"><i class="fas fa-times text-xs"></i></span>'
+        ).join(' ');
+        
+        const progresso = Math.min(100, (soma / 300) * 100);
+        document.getElementById(`${materiaId}_progress`).style.width = `${progresso}%`;
+        document.getElementById(`${materiaId}_progress`).className = `progress-fill ${soma >= 180 ? 'bg-success-500' : 'bg-danger-500'}`;
+        
+        const resultado = document.getElementById(`${materiaId}_res`);
+        resultado.innerHTML = `
+          <div class="flex justify-between items-center">
+            <span class="font-medium text-gray-600 dark:text-gray-300">Total:</span>
+            <span class="font-semibold ${soma >= 180 ? 'text-success-600 dark:text-success-400' : 'text-danger-600 dark:text-danger-400'}">
+              ${soma} pts
+            </span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="font-medium text-gray-600 dark:text-gray-300">Status:</span>
+            <span class="inline-flex items-center gap-1 ${soma >= 180 ? 'text-success-600 dark:text-success-400' : 'text-danger-600 dark:text-danger-400'} font-semibold">
+              ${soma >= 180 ? 'Aprovado' : 'Reprovado'}
+              ${soma >= 180 ? '<i class="fas fa-check-circle"></i>' : '<i class="fas fa-times-circle"></i>'}
+            </span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="font-medium text-gray-600 dark:text-gray-300">Trimestres:</span>
+            <div class="flex gap-1">${mediaTrimestres}</div>
+          </div>
+        `;
+      });
+    };
+
+    const atualizarResumoGeral = () => {
+      const dados = JSON.parse(localStorage.getItem('notasEscola')) || {};
+      let totalPontos = 0;
+      let materiasAprovadas = 0;
+      let materiasReprovadas = 0;
+      let materiasIncompletas = 0;
+      
+      materias.forEach(materia => {
+        const notas = [1, 2, 3].map(t => dados[materia.nome]?.[t - 1] || 0);
+        const soma = notas.reduce((a, b) => a + Number(b), 0);
+        totalPontos += soma;
+        
+        // Verificar se todas as notas foram preenchidas
+        const completa = notas.every(n => n > 0);
+        
+        if (!completa) {
+          materiasIncompletas++;
+        } else if (soma >= 180) {
+          materiasAprovadas++;
+        } else {
+          materiasReprovadas++;
+        }
+      });
+      
+      const totalMateriasComNotas = materiasAprovadas + materiasReprovadas;
+      const percentualAprovacao = totalMateriasComNotas > 0 ? (materiasAprovadas / totalMateriasComNotas * 100).toFixed(1) : 0;
+      const percentualCompleto = ((materias.length - materiasIncompletas) / materias.length * 100).toFixed(1);
+      
+      document.getElementById('resumoGeral').innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-primary-50 dark:bg-primary-900/20 p-4 rounded-lg border border-primary-100 dark:border-primary-800/50">
+            <div class="flex justify-between items-start">
+              <div>
+                <h3 class="text-sm font-medium text-primary-800 dark:text-primary-200 mb-1">Total de Pontos</h3>
+                <p class="text-2xl font-bold text-primary-600 dark:text-primary-400">${totalPontos}</p>
+              </div>
+              <div class="p-2 rounded-lg bg-primary-100 dark:bg-primary-800 text-primary-600 dark:text-primary-300">
+                <i class="fas fa-star"></i>
+              </div>
+            </div>
+          </div>
+          
+          <div class="bg-success-50 dark:bg-success-900/20 p-4 rounded-lg border border-success-100 dark:border-success-800/50">
+            <div class="flex justify-between items-start">
+              <div>
+                <h3 class="text-sm font-medium text-success-800 dark:text-success-200 mb-1">Matérias Aprovadas</h3>
+                <p class="text-2xl font-bold text-success-600 dark:text-success-400">${materiasAprovadas}</p>
+                <p class="text-xs text-success-500 dark:text-success-400/80">${percentualAprovacao}% de aprovação</p>
+              </div>
+              <div class="p-2 rounded-lg bg-success-100 dark:bg-success-800 text-success-600 dark:text-success-300">
+                <i class="fas fa-check-circle"></i>
+              </div>
+            </div>
+          </div>
+          
+          <div class="bg-danger-50 dark:bg-danger-900/20 p-4 rounded-lg border border-danger-100 dark:border-danger-800/50">
+            <div class="flex justify-between items-start">
+              <div>
+                <h3 class="text-sm font-medium text-danger-800 dark:text-danger-200 mb-1">Matérias Reprovadas</h3>
+                <p class="text-2xl font-bold text-danger-600 dark:text-danger-400">${materiasReprovadas}</p>
+                <p class="text-xs text-danger-500 dark:text-danger-400/80">${(100 - percentualAprovacao).toFixed(1)}% de reprovação</p>
+              </div>
+              <div class="p-2 rounded-lg bg-danger-100 dark:bg-danger-800 text-danger-600 dark:text-danger-300">
+                <i class="fas fa-times-circle"></i>
+              </div>
+            </div>
+          </div>
+          
+          <div class="bg-warning-50 dark:bg-warning-900/20 p-4 rounded-lg border border-warning-100 dark:border-warning-800/50">
+            <div class="flex justify-between items-start">
+              <div>
+                <h3 class="text-sm font-medium text-warning-800 dark:text-warning-200 mb-1">Progresso Geral</h3>
+                <div class="progress-bar mb-1">
+                  <div class="progress-fill bg-warning-500" style="width: ${(totalPontos / (materias.length * 300) * 100).toFixed(1)}%"></div>
+                </div>
+                <p class="text-xs text-warning-600 dark:text-warning-400/80">
+                  ${percentualCompleto}% completo
+                  <span class="tooltip">
+                    <i class="fas fa-info-circle ml-1"></i>
+                    <span class="tooltip-text">${materiasIncompletas} matéria(s) incompleta(s)</span>
+                  </span>
+                </p>
+              </div>
+              <div class="p-2 rounded-lg bg-warning-100 dark:bg-warning-800 text-warning-600 dark:text-warning-300">
+                <i class="fas fa-chart-line"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    };
+
+    function mostrarFiltros() {
+      const filtros = document.getElementById('filtros');
+      filtros.classList.toggle('hidden');
+    }
+
+    function filtrarMaterias(tipo) {
+      const dados = JSON.parse(localStorage.getItem('notasEscola')) || {};
+      
+      materias.forEach(materia => {
+        const materiaId = materia.nome.replace(/\s+/g, '_');
+        const card = document.getElementById(`card_${materiaId}`);
+        const notas = [1, 2, 3].map(t => dados[materia.nome]?.[t - 1] || 0);
+        const soma = notas.reduce((a, b) => a + Number(b), 0);
+        const completa = notas.every(n => n > 0);
+        
+        let mostrar = false;
+        
+        switch(tipo) {
+          case 'todas':
+            mostrar = true;
+            break;
+          case 'aprovadas':
+            mostrar = completa && soma >= 180;
+            break;
+          case 'reprovadas':
+            mostrar = completa && soma < 180;
+            break;
+          case 'incompletas':
+            mostrar = !completa;
+            break;
+        }
+        
+        if (mostrar) {
+          card.classList.remove('hidden');
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+    }
+
+    const exportarNotas = () => {
+      const dados = JSON.parse(localStorage.getItem('notasEscola')) || {};
+      let csv = 'Matéria,Trimestre 1,Trimestre 2,Trimestre 3,Total,Status\n';
+      
+      materias.forEach(materia => {
+        const notas = [1, 2, 3].map(t => dados[materia.nome]?.[t - 1] || 0);
+        const soma = notas.reduce((a, b) => a + Number(b), 0);
+        const status = soma >= 180 ? 'Aprovado' : 'Reprovado';
+        
+        csv += `"${materia.nome}",${notas.join(',')},${soma},${status}\n`;
+      });
+      
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `notas_escolares_${new Date().toISOString().slice(0,10)}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Feedback visual
+      const btnExportar = document.querySelector('button[onclick="exportarNotas()"]');
+      btnExportar.innerHTML = '<i class="fas fa-check mr-2"></i> Exportado!';
+      setTimeout(() => {
+        btnExportar.innerHTML = '<i class="fas fa-file-export mr-2"></i> Exportar';
+      }, 2000);
+    };
+
+    // Inicializar
+    document.addEventListener('DOMContentLoaded', () => {
+      carregarNotas();
+    });
+  </script>
+</body>
+</html>
